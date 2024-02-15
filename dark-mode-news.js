@@ -1,5 +1,5 @@
 //name dark mode news
-//; v.1.0.0 (2024/2/15 8:23)
+//; v.1.0.1 (2024/2/16)
 //matches https://www.jiji.com/*, https://www.47news.jp/*, https://www.yomiuri.co.jp/*, https://www.asahi.com/*, https://mainichi.jp/*, https://*.nhk.or.jp/*, https://www.nikkei.com/*, https://jp.reuters.com/*, https://www.cnn.co.jp/*, https://www.bbc.com/*, https://www.afpbb.com/*, https://forbesjapan.com/*, https://news.yahoo.co.jp/*, https://www.bloomberg.co.jp/*
 //option start
 //js
@@ -19,13 +19,10 @@
 	function darken(){
 		const params = new URLSearchParams(location.search);
 		let paramColorScheme = params.get("dmn-color-scheme");
-		if (! (paramColorScheme === "dark" || paramColorScheme === "light")){
-			paramColorScheme = "auto";
-		}
 		log("paramColorScheme:", paramColorScheme);
 		const systemColorScheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? "dark" : "light";
 		log("systemColorScheme:", systemColorScheme);
-		const requiredColorScheme = paramColorScheme === "auto" ? systemColorScheme : paramColorScheme;
+		const requiredColorScheme = (paramColorScheme === "dark" || paramColorScheme === "light") ? paramColorScheme : systemColorScheme;
 		log("requiredColorScheme:", requiredColorScheme);
 		const detectedColorScheme = detectColorScheme(document.body);
 		log("detetedColorScheme:", detectedColorScheme);
@@ -66,7 +63,7 @@
 					border: solid;
 					width: 32px;
 					height: 32px;
-					background-image: url('data:image/svg+xml;charset=utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 500 500" preserveAspectRatio="xMinYMin meet" ><rect x="0" y="0" width="500" height="500" style="fill:none;stroke:none;"/><path d="M0,499l499,-499l0,499Z"  style="fill:black;stroke:black;stroke-width:5px"/><path d="M0,0l499,0l-499,499Z" style="fill:white;stroke:black;stroke-width:10px"/></svg>');
+					background-image: url('data:image/svg+xml;charset=utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="5 5 505 505" preserveAspectRatio="xMinYMin meet" ><rect x="0" y="0" width="500" height="500" style="fill:none;stroke:none;"/><path d="M0,499l499,-499l0,499Z"  style="fill:black;stroke:black;stroke-width:5px"/><path d="M0,0l499,0l-499,499Z" style="fill:white;stroke:black;stroke-width:10px"/></svg>');
 					padding: initial;
 					position: fixed;
 					bottom: 10px;
@@ -108,6 +105,27 @@
 			observer.observe(document.body, {attributes: true});
 			setTimeout(function(){ observer.disconnect(); }, 1000);
 			log("monitoring document.body attributes");
+			if (paramColorScheme){
+				const fixLinks = function(){
+					Array.from(document.links).forEach(a =>{
+						const url = new URL(a.href);
+						if (url.hostname == location.hostname){
+							const params = new URLSearchParams(url.search);
+							params.append("dmn-color-scheme", paramColorScheme);
+							url.search = params.toString();
+							a.href = url.href;
+						}
+					});
+					log("fixed links");
+				};
+				if (document.readyState === "loading"){
+					document.addEventListener("DOMContentLoaded", ev => fixLinks());
+					log("waiting DOMContentLoaded event");
+				}
+				else {
+					fixLinks();
+				}
+			}
 		}
 	}
 	if (document.body){ darken(); }
