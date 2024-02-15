@@ -18,3 +18,9 @@
 
 ロイターは react で動的にページを表示していて、ダークモードにするために react を無効にしています。そのため記事の発行日時が `2024年2月15日午前 12:55 UTC 前更新`となるなど不具合が目立ちます。これも記事本文が読めればいいやでスルーしています。  
 react を無効にしているためダーク／ライト切り替えボタンでライトモードにしても不具合は残ります。
+
+## Script for Me に登録する方法
+下記のように Scripts Resource 欄にコピペして「Save」ボタンを押してください。   
+「Enable at startup」にチェックを入れておかないと Firefox が起動するたびに Script for Me をオンにする必要があります。
+
+<img src="https://yobukodori.github.io/freedom/image/dark-mode-news-with-script-for-me.jpg" style="width:90%">
