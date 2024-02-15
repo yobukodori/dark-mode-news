@@ -1,6 +1,10 @@
 # dark mode news
 [日本語ニュースリーダー](https://github.com/yobukodori/j-news-reader)の対象ニュースサイトをダークモードで表示するユーザースクリプトです。  
-自作Firefoxアドオンのユーザースクリプトマネージャー[Script for Me](https://addons.mozilla.org/ja/firefox/addon/script-for-me/) 用ですがヘッダ部分を変えれば（実際に試してはいませんが）他のユーザースクリプトマネージャーでも問題なく動くと思います。
+### JIJI.COMでの表示の様子
+<img src="https://yobukodori.github.io/freedom/image/dark-mode-news-jiji.jpg" style="width:90%">
+
+
+自作 Firefox アドオンのユーザースクリプトマネージャー [Script for Me](https://addons.mozilla.org/ja/firefox/addon/script-for-me/) 用ですがヘッダ部分を変えれば（実際に試してはいませんが）他のユーザースクリプトマネージャーでも問題なく動くと思います。
 
 日本語ニュースリーダーから記事を開くと以下の場合にダークモードで表示します。
 
