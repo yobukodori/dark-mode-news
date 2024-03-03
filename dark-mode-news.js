@@ -1,6 +1,6 @@
 //name dark mode news
-//; v.1.0.3 (2024/2/25 05:43)
-//matches https://www.jiji.com/*, https://www.47news.jp/*, https://www.yomiuri.co.jp/*, https://www.asahi.com/*, https://mainichi.jp/*, https://*.nhk.or.jp/*, https://www.nikkei.com/*, https://jp.reuters.com/*, https://www.cnn.co.jp/*, https://www.bbc.com/*, https://www.afpbb.com/*, https://forbesjapan.com/*, https://news.yahoo.co.jp/*, https://www.bloomberg.co.jp/*
+//; v.1.0.4 (2024/3/3 19:09)
+//matches https://www.jiji.com/*, https://www.47news.jp/*, https://www.yomiuri.co.jp/*, https://www.asahi.com/*, https://mainichi.jp/*, https://*.nhk.or.jp/*, https://www.nikkei.com/*, https://jp.reuters.com/*, https://www.cnn.co.jp/*, https://www.bbc.com/*, https://www.afpbb.com/*, https://forbesjapan.com/*, https://news.yahoo.co.jp/*, https://www.bloomberg.co.jp/*, https://wedge.ismedia.jp/*
 //option start
 //js
 (function(){
@@ -42,13 +42,27 @@
 			const className = "dark-mode-news-dark-mode",
 				id = className + "-style",
 				buttonId = "dark-mode-news-recovery-button";
-			let ng = "img, svg";
+			let ng = "img, svg", extraCss = "";
 			if (location.hostname === "www.afpbb.com"){
 				ng += ", .next-btn, .prev-btn, .num-main, .thumbtitle";
 			}
-			let e = document.createElement("style");
-			e.id = id;
-			e.textContent = `
+			else if (location.hostname === "www.bloomberg.co.jp"){
+				ng += ", .navi-search";
+			}
+			else if (/\breuters.com$/.test(location.hostname)){
+				ng += ", #fusion-app *";
+				extraCss = `
+				.dark-mode-news-dark-mode #fusion-app, .dark-mode-news-dark-mode [class^="site-header__main-bar"], .dark-mode-news-dark-mode [class^="nav-dropdown__inner"]{
+					background-color: Canvas;
+					color: CanvasText;
+					color-scheme: dark;
+				}
+				.dark-mode-news-dark-mode [class*="text__dark-grey"], .dark-mode-news-dark-mode [class*="text__inherit-color"], .dark-mode-news-dark-mode [class*="text__black"], .dark-mode-news-dark-mode [class*="text__light"] {
+					color:CanvasText;
+				}
+				`;
+			}
+			let cssText = `
 				 body.${className} {
 					background-color: Canvas;
 					color: CanvasText;
@@ -71,14 +85,16 @@
 					border: solid 1px;
 					width: 32px;
 					height: 32px;
-					background-image: url('data:image/svg+xml;charset=utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 500 500" preserveAspectRatio="xMinYMin meet" ><rect x="0" y="0" width="500" height="500" style="fill:none;stroke:none;"/><path d="M0,499l499,-499l0,499Z"  style="fill:black;stroke:black;stroke-width:5px"/><path d="M0,0l499,0l-499,499Z" style="fill:white;stroke:black;stroke-width:10px"/></svg>');
+					background-image: url('data:image/svg+xml;charset=utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 500 500" preserveAspectRatio="xMinYMin meet" ><rect x="0" y="0" width="500" height="500" style="fill:none;stroke:none;"/><path d="M0,499l499,-499l0,499Z"  style="fill:black;stroke:black;stroke-width:1px"/><path d="M0,0l499,0l-499,499Z" style="fill:white;stroke:black;stroke-width:1px"/></svg>');
 					padding: initial;
 					position: fixed;
 					bottom: 10px;
 					right: 10px;
 					z-index:2147483647;
-				}
-				`;
+				}` + extraCss;
+			let e = document.createElement("style");
+			e.id = id;
+			e.textContent = cssText;
 			document.getElementsByTagName("head")[0].append(e);
 			document.body.classList.add(className);
 			log("changed color scheme. okay?");
@@ -88,14 +104,6 @@
 				document.body.classList.toggle(className);
 			});
 			document.body.append(e);
-			if (/\breuters.com$/.test(location.hostname)){
-				// react prevents changing to dark mode. so disable react.
-				const e = document.getElementById("fusion-app");
-				if (e) {
-					e.id = "disabled-fusion-app";
-					log("disabled react fusion-app");
-				}
-			}
 			// some page sets class attribute later.
 			const observer = new MutationObserver((mutations, observer)=>{
 				mutations.forEach((m,i)=>{
@@ -117,17 +125,19 @@
 				const fixLink = function (a){
 					const url = new URL(a.href);
 					if ((url.hostname === location.hostname) || [url.hostname, location.hostname].every(e => /\.nhk\.or\.jp$/.test(e))){
-						const params = new URLSearchParams(url.search);
-						params.append("dmn-color-scheme", paramColorScheme);
-						url.search = params.toString();
-						a.href = url.href;
+						const params = new URLSearchParams(url.search), name = "dmn-color-scheme";
+						if (! params.has(name)){
+							params.append(name, paramColorScheme);
+							url.search = params.toString();
+							a.href = url.href;
+						}
 					}
 				};
 				const fixLinks = function(recured){
 					if (! recured){
-						if (/forbesjapan\.com|\.nhk\.or\.jp/.test(location.hostname)){
-							// forbesjapan.com dynamically adds a parameter with a slight delay.
-							setTimeout(fixLinks, 500, true);
+						// Some sites add links or change link parameters later
+						if (/forbesjapan\.com|\.nhk\.or\.jp|jp\.reuters\.com|www\.yomiuri\.co\.jp/.test(location.hostname)){
+							setTimeout(fixLinks, 1000, true);
 							return;
 						}
 					}
@@ -154,14 +164,9 @@
 					if (n.tagName === "BODY"){
 						log("got body");
 						observer.disconnect();
-						if (document.body){
-							darken();
-						}
-						else { // nhk.or.jp
-							let timer = setInterval(function(){
-								document.body && (clearInterval(timer), darken());
-							}, 10);
-						}
+						(function checkBody(){
+							document.body ? darken() : setTimeout(checkBody, 0);
+						})();
 					}
 				});
 			});
